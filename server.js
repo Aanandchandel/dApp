@@ -8,6 +8,7 @@ const cors=require("cors")
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const userRoutes =require("./routes/userRoute.js") 
+const mail=require("./routes/mail.js")
 const verifyUserToken=require("./middleware/__tknValidationUser.js")
 const verifyToken =require("./middleware/__tknValidationAdmin")
 // Create Express app
@@ -27,6 +28,7 @@ app.use(morgan('dev')); // Log HTTP requests to the console
 // warning defind routes after middellware
 // Set Routes
 app.use(userRoutes)
+app.use(mail)
 
 
 
