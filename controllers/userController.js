@@ -1,35 +1,48 @@
 require("dotenv").config();
+const generateOTP = require("../Funtion/otp.js");
 const User = require("../models/user");
+const mail = require("../Funtion/mail.js");
 const jwt = require("jsonwebtoken");
-// create a new user
+// create a new user  //otp port 
 const secretKey = process.env.SECRE_TKEY;
 const createUser = async (req, res) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password, user } = req.body;
+    const username = email.split("@")[0];
     const findEmail = await User.find({ email });
     console.log(findEmail);
+    // if user exist but not varifyed
+    if (!findEmail.length <= 0 && !findEmail.valid) {
+      const otp = generateOTP(6);
+      //sending otp to existing user
+      mail(email, { otp, username, user }).catch((error) => {
+        console.error("OTP sending error:", error);
+        return res.status(500).send({ message: "OTP sending error" });
+      });
+
+      const updateUser = await User.findOneAndUpdate(
+        { email },
+        { username, email, otp, password }
+      );
+      console.log("upated", updateUser);
+      return res.status(201).send({ message: "otp sent" });
+    }
+    //if user is not availble
     if (findEmail.length <= 0) {
-      const newUser = new User({ email, password, username }); // Create a new User instance
-      await newUser.save(); // Save the new user to the database
+      const otp = generateOTP(6);
+      mail(email, { otp, username, user }).catch(console.error);
+      const newUser = new User({ email, password, username, otp }); // Create a new User instance
+      console.log(newUser);
+      await newUser.save(); //Save the new user to the database
       const responseData = {
-        id: newUser._id, // Assuming id is the identifier field
+        id: newUser._id, //Assuming id is the identifier field
         email: newUser.email,
         username: newUser.username,
         createdAt: newUser.createdAt,
       };
-
       // Create a JWT token
       const token = jwt.sign(responseData, secretKey, { expiresIn: "24h" });
-      // try{}catch(err){}
-
-      // / Enable CORS middleware
-      // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
-      // res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-      // Set a cookie in the response
-      // res.setHeader('Set-Cookie', `jwt=${token}; HttpOnly; Max-Age=86400; Path=/`);
-
-      res.status(201).send({ message: "done", token: token }); // Send the created user as the response
+      res.status(201).send({ message: "otp sent", token: token, username }); // Send the created user as the response
     } else {
       res.status(409).send({ message: "User already exist" });
     }
@@ -38,8 +51,68 @@ const createUser = async (req, res) => {
   }
 };
 
-//  Get all users
+     
+//varify otp 
+const varifyOTP=async (req, res) => {
+  try {
+      const { otp, email } = req.body;
+      const user = await User.findOne({ email });
+      
+      if (user && user.otp === otp) {
+          const updatedUser = await User.findOneAndUpdate({ email }, { otp: generateOTP(10), valid: true });
+          console.log(updatedUser.otp, otp);
+          
+          const responseData = {
+              id: user._id, // Assuming id is the identifier field
+              email: user.email,
+              username: user.username,
+              createdAt: user.createdAt,
+          };
+  
+          const tokenExpiration = 6 * 30 * 24 * 60 * 60; // 6 months in seconds
 
+          const token = jwt.sign(responseData, secretKey, { expiresIn: tokenExpiration });
+
+          return res.status(200).send({ message: "valid", token });
+      } else {
+          return res.status(404).send({ message: "otp is not valid" });
+      }
+  } catch (error) {
+      console.error("Error in /varify route:", error);
+      return res.status(500).send({ message: "An error occurred while processing the request" });
+  }
+}
+
+//login route
+
+const login=async(req,res)=>{
+  try{
+      const {email,password}=req.body;
+      if(email&&password){
+          const user=await User.findOne({email})
+          if(user){
+              if(user.password==password){
+                  const responseData = {
+                      id: user._id, // Assuming id is the identifier field
+                      email: user.email,
+                      username: user.username,
+                      createdAt: user.createdAt,
+                  };
+                  const tokenExpiration = 6 * 30 * 24 * 60 * 60; // 6 months in seconds
+                  const token = jwt.sign(responseData, secretKey, { expiresIn: tokenExpiration });
+                  return res.status(200).send({message:"valid user",token,username:user.username})
+              }else{
+                  return res.send({message:"password is not valid"})
+              }
+          }else{
+              return res.send({message:"email note fond"})
+          }
+      }else{res.send({message:"email and password required"})}
+  }catch(err){res.send({message:err})}
+}
+
+
+//  Get all users
 const getUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -90,4 +163,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser, getUser, deleteUser, updateUser, getUsers };
+module.exports = {login, createUser,varifyOTP, getUser, deleteUser, updateUser, getUsers };

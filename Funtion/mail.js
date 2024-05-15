@@ -1,6 +1,6 @@
 require("dotenv").config()
-const express= require("express")
-const mail=express.Router()
+// const express= require("express")
+// const mail=express.Router()
 const nodemailer=require("nodemailer")
 
 const transporter = nodemailer.createTransport({
@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   });
 
 
-  async function main(to,otp) {
+  async function main(to,data) {
     console.log(process.env.USER)
     // send mail with defined transport object
     const info = await transporter.sendMail({
@@ -24,21 +24,25 @@ const transporter = nodemailer.createTransport({
       to: [to], // list of receivers
       subject: "OTP ✔", // Subject line
       text: "Youir otp is 12345678", // plain text body
-      html: `<b>Hello your OTP is ${otp}  </b>,` // html body
-    });
+
+      html:`<p>hello,${data.user} your username is </p>
+      <h1>${data.username}</h1> 
+      <p>and your OTP is ${data.otp}</p>`
+      //  `<b>Hello your OTP is ${data.otp}  </b>,
+      // <b>your username ${data.username}</b>` // html body
+    }
+    );
   
     console.log("Message sent: %s", info.messageId);
     // Message sent: <d786aa62-4e0a-070a-47ed-0b0666549519@ethereal.email>
   }
 
 
-mail.get("/p",(req,res)=>{
-    res.send("ksdhfksadhfkahsd")
-    main("jacklinuxnd@gmail.com",10000).catch(console.error);
+// mail.get("/p",(req,res)=>{
+//     res.send("ksdhfksadhfkahsd")
+//     main("jacklinuxnd@gmail.com",10000).catch(console.error);
 
-})
-
-
+// })
 
 
 
@@ -48,4 +52,6 @@ mail.get("/p",(req,res)=>{
 
 
 
-module.exports=mail
+
+
+module.exports=main;
