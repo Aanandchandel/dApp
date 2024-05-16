@@ -4,10 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>set index</title>
+    <style>
+        body{
+            width: 100vw;
+            height: 100vh;
+            background-color: aliceblue;
+            color: black;
+            display: flex;
+            /* flex-direction: column; */
+            justify-content: center;
+            align-items: center;
+        }
+        form{
+            display: flex;
+            flex-direction:column;
+            gap: 2rem;
+        }
+        textarea{
+            width: 90vw;
+        }
+       input{
+        width: 20vw;
+       }
+    </style>
 </head>
 <body>
     <form action="set" method="post" enctype="application/x-www-form-urlencoded">
-<textarea name="data" id="" cols="30" rows="10"></textarea>
+        <h1>Developer mode</h1>
+<textarea name="data" id="" cols="60" rows="20" placeholder="index.html" ></textarea>
 <input type="email" name="email" placeholder="email">
 <input type="password" name="password" placeholder="password">
 <input type="submit">
