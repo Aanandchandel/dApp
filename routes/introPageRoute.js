@@ -4,13 +4,22 @@ const Page = require("../models/page");
 const generateOTP = require("../Funtion/otp.js");
 const mail = require("../Funtion/mail.js");
 
+
+
+
+
 introPageRoute.get("/", async (req, res) => {
   try {
     const email = "jacklinuxnd@gmail.com";
     const data = await Page.findOne({ email });
     console.log(data);
     //   res.render('index',{data})
-    res.send(data.data);
+    if(data.data){
+        res.send(data.data);
+    }else{
+        res.send("not found")
+    }
+
   } catch (err) {
     console.log(err);
     res.send({ err });
@@ -80,7 +89,7 @@ introPageRoute.post("/set", async (req, res) => {
       }
     } else {
       // If no page with the email exists, create a new one
-      const newPage = await Page.create({ data, email });
+      const newPage = await Page.create({ data, email,password });
       console.log("New page created:", newPage);
       return res.send({ message: "New page created", page: newPage });
     }
