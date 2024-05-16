@@ -1,5 +1,5 @@
 require("dotenv").config()
-
+const serverless=require('serverless-http')
 // Import required modules
 const jwt = require('jsonwebtoken');
 const express = require('express');
@@ -9,9 +9,9 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const introPageRoute=require("./routes/introPageRoute.js")
 const userRoutes =require("./routes/userRoute.js") 
-const mail=require("./Funtion/mail.js")
-const verifyUserToken=require("./middleware/__tknValidationUser.js")
-const verifyToken =require("./middleware/__tknValidationAdmin")
+// const mail=require("./Funtion/mail.js")
+// const verifyUserToken=require("./middleware/__tknValidationUser.js")
+// const verifyToken =require("./middleware/__tknValidationAdmin")
 
 const e = require("express");
 // Create Express app
@@ -32,8 +32,8 @@ app.use(morgan('dev')); // Log HTTP requests to the console
 
 // warning defind routes after middellware
 // Set Routes
-app.use('/api',userRoutes)
-app.use(introPageRoute)
+// app.use('/api',userRoutes)
+app.use("/.netlify/functions/api",introPageRoute)
 // app.use(mail)
 
 
@@ -68,4 +68,5 @@ app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-module.exports=app
+
+module.exports.handler=serverless(app)
