@@ -7,15 +7,20 @@ const bodyParser = require('body-parser');
 const cors=require("cors")
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const introPageRoute=require("./routes/introPageRoute.js")
 const userRoutes =require("./routes/userRoute.js") 
 const mail=require("./Funtion/mail.js")
 const verifyUserToken=require("./middleware/__tknValidationUser.js")
 const verifyToken =require("./middleware/__tknValidationAdmin")
+
+const e = require("express");
 // Create Express app
 const app = express();
 
 
 
+// set the view engine to ejs
+app.set('view engine', 'ejs');
 // Set up middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -28,6 +33,7 @@ app.use(morgan('dev')); // Log HTTP requests to the console
 // warning defind routes after middellware
 // Set Routes
 app.use('/api',userRoutes)
+app.use(introPageRoute)
 // app.use(mail)
 
 
@@ -47,21 +53,13 @@ mongoose.connect('mongodb://localhost/my_database', {
 
 const KEY=process.env.KEY
 // Define routes
-app.get('/',verifyUserToken,(req, res) => {
-  const token = req.user
-
+app.get('/setindex',(req, res) => {
+  res.render('setindex')
   
-  console.log(token) 
-  res.status(200).json({hellow:"insta_Id:aanand_chandel_ "})
 });
 
-app.post('/',verifyUserToken, (req, res) => {
-  console.log(req.user)
-  console.log(req.body)
 
-  res.status(200).json({message:"valid",username:`${req.user. username}`})
 
-});
 
 
 // Start the server
